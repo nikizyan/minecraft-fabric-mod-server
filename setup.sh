@@ -4,18 +4,18 @@ echo "=========================================="
 echo " 🚀 Initializing Termux Minecraft Server"
 echo "=========================================="
 
-# 1. Ask for Android storage permissions
-echo "--> Requesting Android Storage Access..."
-termux-setup-storage
-sleep 2
-
-# 2. Update package repositories & install dependencies
+# 1. Update package repositories & install dependencies
 echo "--> Updating system packages..."
 pkg update -y && pkg upgrade -y
 
+# 2. Install utilities and setup storage access
 echo "--> Installing OpenJDK 21, Playit, and utilities..."
 pkg install tur-repo -y
 pkg install openjdk-21 playit-cli nano curl -y
+
+echo "--> Requesting Android Storage Access..."
+termux-setup-storage
+sleep 2
 
 # 3. Set up the directory structure
 MC_DIR="$HOME/.mc-server"
@@ -31,7 +31,12 @@ fi
 echo "eula=true" > "$MC_DIR/eula.properties"
 echo "--> Accepted Minecraft EULA."
 
-# 6. Generate the start.sh wrapper script
+# 6. Setup Playit account
+echo "--> Generating link to connect playit.gg..."
+echo "--> Please click on the link to create playit.gg account (one time only)..."
+playit-cli
+
+# 7. Generate the start.sh wrapper script
 cat << 'EOF' > "$MC_DIR/start.sh"
 #!/bin/bash
 cd "$HOME/.mc-server"
@@ -53,7 +58,7 @@ JAVA_PID=$!
 # Wait 15 seconds for JVM initialization, then trigger Playit tunnel
 echo "--> Waiting for server initialization..."
 sleep 15
-playit &
+playit-cli &
 
 # Wait on Java process
 wait $JAVA_PID
